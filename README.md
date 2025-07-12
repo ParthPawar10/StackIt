@@ -56,6 +56,7 @@ Document Version   Last Updated
    
 5. Core Feature Implementation
    The following table maps core application features to their primary components and services.
+
    Feature	          Key Components	                                                Primary Service(s)
    Authentication	  LoginModal.jsx, RegisterModal.jsx, ProtectedRoute.jsx	                  authService.js
    Question Management	  QuestionList.jsx, QuestionDetail.jsx, AskQuestionModal.jsx	          questionService.js
@@ -83,30 +84,27 @@ Document Version   Last Updated
       •	Functions: addNotification(notification), markAsRead(id)
       •	Consumer Hook: useNotifications() in src/hooks/useNotifications.js
 7. API Layer
-   All communication with the backend API is abstracted into the src/services/ directory. This isolates data-fetching logic from the UI components.
-   •	api.js: Contains the configured Axios instance, including the base URL, interceptors for handling authentication tokens, and standardized error handling.
-   •	Service Modules (authService.js, questionService.js, etc.): Each module exports functions that correspond to specific API endpoints. These functions encapsulate the      logic for making the request and returning formatted data or errors.
+      All communication with the backend API is abstracted into the src/services/ directory. This isolates data-fetching logic from the UI components.
+      •	api.js: Contains the configured Axios instance, including the base URL, interceptors for handling authentication tokens, and standardized error handling.
+      •	Service Modules (authService.js, questionService.js, etc.): Each module exports functions that correspond to specific API endpoints. These functions encapsulate             the logic for making the request and returning formatted data or errors.
 
 6. Styling & Design System
    The project employs Tailwind CSS for a utility-first styling approach, ensuring rapid development and a consistent design language. The core design system is defined in     tailwind.config.js.
-   
    6.1. Color Palette
-      Role	      ColorName	   Hex Code	   Tailwind Class
+      Role	   ColorName	Hex Code	   Tailwind Class
       Primary	   Blue	         #3B82F6	   blue-500
-      Secondary	Gray	         #6B7280	   gray-500
-      Success	   Green	         #10B981	   green-500
-      Warning	   Orange	      #F59E0B	   amber-500
-      Error	      Red	         #EF4444	   red-500
+      Secondary	   Gray	         #6B7280	   gray-500
+      Success	   Green	 #10B981	   green-500
+      Warning	   Orange	 #F59E0B	   amber-500
+      Error	   Red	         #EF4444	   red-500
       Neutral	   Gray           varies	   gray-100 to gray-900
 
    6.2. Typography
-
       •	Headers: Inter font family (font-sans).
       •	Body: System font stack (font-sans).
       •	Code: Fira Code or other monospace font (font-mono).
    
    6.3. Responsive Breakpoints
-
       A mobile-first approach is used. Breakpoints are defined in tailwind.config.js.
       •	sm: 640px
       •	md: 768px
@@ -120,9 +118,9 @@ Document Version   Last Updated
       •	Node.js (v18.x or later)
       •	npm
    7.2. Setup
-      1.	Clone the repository: git clone https://github.com/ParthPawar10/StackIt
-      2.	Install dependencies: npm install 
-      3.	Create a .env file from .env.example and populate it with the required environment variables.
+      1.Clone the repository: git clone https://github.com/ParthPawar10/StackIt
+      2.Install dependencies: npm install 
+      3.Create a .env file from .env.example and populate it with the required environment variables.
    7.3. Common Scripts
       Script	           Description
       npm run dev	   Starts the development server with hot-reloading.
@@ -147,8 +145,6 @@ Document Version   Last Updated
       o	Provide a clear description of the changes in the PR.
       o	Link the PR to the relevant issue or ticket.
       o	Require at least one code review from another team member before merging.
-
-
 
 ##  Team Details
 **Team Name:** Enroll-X - Minimal Q&A Platform  
