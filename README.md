@@ -19,7 +19,7 @@ Document Version	Last Updated
 3. Project Structure
    The project follows a feature-based folder structure to group related files and enhance discoverability.
    stackit-frontend/
-   ├── public/                     # Static assets processed by the bundler
+ '''  ├── public/                     # Static assets processed by the bundler
    │   ├── index.html              # Main HTML entry point
    │   ├── favicon.ico             # Application favicon
    │   └── manifest.json           # PWA manifest
@@ -52,7 +52,7 @@ Document Version	Last Updated
    ├── package.json                # Project dependencies and scripts
    ├── tailwind.config.js          # Tailwind CSS theme and plugin configuration
    ├── postcss.config.js           # PostCSS plugin configuration
-   └── README.md                   # High-level project overview
+   └── README.md                   # High-level project overview'''
    
 4. Core Feature Implementation
    The following table maps core application features to their primary components and services.
