@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, User, Menu, X, LogOut, Settings } from 'lucide-react';
+import { Search, Bell, User, Menu, X, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useNotifications } from '../../context/NotificationContext.tsx';
 import SearchBar from './SearchBar.tsx';

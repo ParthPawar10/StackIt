@@ -33,12 +33,6 @@ function App() {
             />
             <Routes>
               <Route path="/auth" element={<Auth />} />
-              <Route path="settings" element={
-  <ProtectedRoute>
-    <SettingsPage />
-  </ProtectedRoute>
-} />
-
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
                 <Route path="questions" element={<QuestionsPage />} />
@@ -55,6 +49,11 @@ function App() {
                 } />
                 <Route path="tags" element={<TagsPage />} />
                 <Route path="users" element={<UsersPage />} />
+                <Route path="settings" element={
+                  <ProtectedRoute>
+                    <SettingsPage />
+                  </ProtectedRoute>
+                } />
                 <Route path="admin/*" element={
                   <ProtectedRoute requireAdmin>
                     <AdminDashboard />
