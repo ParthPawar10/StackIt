@@ -6,6 +6,7 @@ import { useNotifications } from '../../context/NotificationContext.tsx';
 import SearchBar from './SearchBar.tsx';
 import NotificationDropdown from '../notifications/NotificationDropdown.tsx';
 import AuthModals from '../auth/AuthModals.tsx';
+import logo from '../../assets/logo1.png';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -33,10 +34,7 @@ export default function Header() {
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">S</span>
-                </div>
-                <span className="text-xl font-bold text-gray-900 dark:text-white">StackIt</span>
+                <img src={logo} alt="StackIt Logo" className="h-8 w-auto" />
               </Link>
             </div>
 
