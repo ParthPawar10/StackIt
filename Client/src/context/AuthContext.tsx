@@ -82,12 +82,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(updatedUser);
   };
 
+  const updateUserFromToken = async (token: string) => {
+    try {
+      localStorage.setItem('token', token);
+      const userData = await authService.getCurrentUser();
+      setUser(userData);
+      return userData;
+    } catch (error) {
+      console.error('Failed to update user from token:', error);
+      localStorage.removeItem('token');
+      throw error;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     login,
     register,
     logout,
     updateUser,
+    updateUserFromToken,
     loading,
     isAuthenticated: !!user,
   };

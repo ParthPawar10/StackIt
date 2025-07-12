@@ -19,8 +19,27 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
+    required: function() {
+      // Password is only required if no OAuth providers are linked
+      return !this.googleId && !this.githubId;
+    },
     minlength: [6, 'Password must be at least 6 characters long']
+  },
+  googleId: {
+    type: String,
+    default: null
+  },
+  githubId: {
+    type: String,
+    default: null
+  },
+  fullName: {
+    type: String,
+    default: ''
+  },
+  isEmailVerified: {
+    type: Boolean,
+    default: false
   },
   role: {
     type: String,
@@ -54,7 +73,8 @@ const userSchema = new mongoose.Schema({
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+  // Skip password hashing if no password is provided (OAuth users)
+  if (!this.password || !this.isModified('password')) return next();
   
   try {
     const salt = await bcrypt.genSalt(12);

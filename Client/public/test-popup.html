@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test OAuth Popup</title>
+</head>
+<body>
+    <h1>Test OAuth Popup Communication</h1>
+    <button onclick="sendTestMessage()">Send Test Message</button>
+    <button onclick="closeWindow()">Close Window</button>
+    
+    <script>
+        console.log('Test popup loaded');
+        console.log('Window opener exists:', !!window.opener);
+        
+        function sendTestMessage() {
+            if (window.opener) {
+                console.log('Sending test message to parent');
+                const message = {
+                    type: 'OAUTH_SUCCESS',
+                    token: 'test-token-123'
+                };
+                
+                console.log('Message:', message);
+                console.log('Target origin: http://localhost:5173');
+                
+                window.opener.postMessage(message, 'http://localhost:5173');
+                console.log('Message sent');
+                
+                // Also try with wildcard
+                setTimeout(() => {
+                    console.log('Sending with wildcard origin');
+                    window.opener.postMessage(message, '*');
+                }, 1000);
+            } else {
+                console.log('No window.opener available');
+            }
+        }
+        
+        function closeWindow() {
+            window.close();
+        }
+        
+        // Auto-send message after 2 seconds
+        setTimeout(sendTestMessage, 2000);
+    </script>
+</body>
+</html>
