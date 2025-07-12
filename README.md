@@ -19,7 +19,8 @@ Document Version	Last Updated
 3. Project Structure
    The project follows a feature-based folder structure to group related files and enhance discoverability.
    stackit-frontend/
-```├── public/                     # Static assets processed by the bundler
+   ```
+   ├── public/                     # Static assets processed by the bundler
    │   ├── index.html              # Main HTML entry point
    │   ├── favicon.ico             # Application favicon
    │   └── manifest.json           # PWA manifest
@@ -52,9 +53,9 @@ Document Version	Last Updated
    ├── package.json                # Project dependencies and scripts
    ├── tailwind.config.js          # Tailwind CSS theme and plugin configuration
    ├── postcss.config.js           # PostCSS plugin configuration
-   └── README.md                   # High-level project overview```
+   └── README.md                   # High-level project overview
    
-4. Core Feature Implementation
+5. Core Feature Implementation
    The following table maps core application features to their primary components and services.
    Feature	Key Components	Primary Service(s)
    Authentication	LoginModal.jsx, RegisterModal.jsx, ProtectedRoute.jsx	authService.js
@@ -65,7 +66,7 @@ Document Version	Last Updated
    User Profiles	UserProfile.jsx, ProfileSettings.jsx, UserActivity.jsx	userService.js
    Admin Dashboard	AdminDashboard.jsx, UserManagement.jsx	adminService.js
 
-5. State Management
+6. State Management
    We utilize React's Context API for managing global and cross-cutting state. This approach avoids introducing heavy external libraries for state that is not highly           complex or frequently changing.
    4.1. AuthContext
       •	Purpose: Manages the authentication state of the user.
@@ -82,13 +83,14 @@ Document Version	Last Updated
       •	State: { notifications: Array, unreadCount: number }
       •	Functions: addNotification(notification), markAsRead(id)
       •	Consumer Hook: useNotifications() in src/hooks/useNotifications.js
-6. API Layer
+7. API Layer
    All communication with the backend API is abstracted into the src/services/ directory. This isolates data-fetching logic from the UI components.
    •	api.js: Contains the configured Axios instance, including the base URL, interceptors for handling authentication tokens, and standardized error handling.
    •	Service Modules (authService.js, questionService.js, etc.): Each module exports functions that correspond to specific API endpoints. These functions encapsulate the      logic for making the request and returning formatted data or errors.
 
 6. Styling & Design System
    The project employs Tailwind CSS for a utility-first styling approach, ensuring rapid development and a consistent design language. The core design system is defined in     tailwind.config.js.
+   ```
    6.1. Color Palette
       Role	      ColorName	   Hex Code	   Tailwind Class
       Primary	   Blue	         #3B82F6	   blue-500
@@ -97,19 +99,24 @@ Document Version	Last Updated
       Warning	   Orange	      #F59E0B	   amber-500
       Error	      Red	         #EF4444	   red-500
       Neutral	   Gray           varies	   gray-100 to gray-900
+   ```
    6.2. Typography
+   ```
       •	Headers: Inter font family (font-sans).
       •	Body: System font stack (font-sans).
       •	Code: Fira Code or other monospace font (font-mono).
+   ```
    6.3. Responsive Breakpoints
+   ```
       A mobile-first approach is used. Breakpoints are defined in tailwind.config.js.
       •	sm: 640px
       •	md: 768px
       •	lg: 1024px
       •	xl: 1280px
       •	2xl: 1536px
+   
 
-7. Development Tooling & Scripts
+8. Development Tooling & Scripts
    7.1. Prerequisites
       •	Node.js (v18.x or later)
       •	npm
@@ -118,12 +125,14 @@ Document Version	Last Updated
       2.	Install dependencies: npm install 
       3.	Create a .env file from .env.example and populate it with the required environment variables.
    7.3. Common Scripts
+```
       Script	         Description
       npm run dev	      Starts the development server with hot-reloading.
       npm run build	   Compiles and bundles the application for production.
       npm run test	   Runs the unit and integration test suite using Jest.
       npm run lint	   Lints the codebase using ESLint to check for code quality issues.
       npm run format	   Formats the entire codebase using Prettier.
+```
 
 8. Testing Strategy
    Quality assurance is maintained through a multi-layered testing strategy.
