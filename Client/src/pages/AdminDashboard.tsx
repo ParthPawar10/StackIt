@@ -17,7 +17,9 @@ import {
   XCircle
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useAuth } from '../context/AuthContext.tsx';
+// (removed duplicate import)
+import { useAuth } from '../contexts/AuthContext';
+import api from '../utils/api';
 import toast from 'react-hot-toast';
 
 interface AdminStats {
@@ -61,7 +63,8 @@ export default function AdminDashboard() {
   const { user } = useAuth();
 
   // Check if user is admin
-  const isAdmin = user?.email === 'admin@example.com'; // Replace with proper admin check
+  // const isAdmin = user?.email === 'admin@example.com'; // Remove old check
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -71,68 +74,25 @@ export default function AdminDashboard() {
   const loadAdminData = async () => {
     try {
       setLoading(true);
-      
-      // Mock admin data - replace with actual API calls
-      const mockStats: AdminStats = {
-        totalUsers: 1247,
-        totalQuestions: 3892,
-        totalAnswers: 8734,
-        pendingReports: 7,
-        activeUsers: 89,
-        newUsersToday: 12
-      };
-
-      const mockReports: ReportedContent[] = [
-        {
-          id: 'report1',
-          type: 'question',
-          title: 'Inappropriate question about hacking',
-          content: 'How can I hack into someone\'s system...',
-          author: 'baduser123',
-          reporter: 'gooduser456',
-          reason: 'Violates community guidelines',
-          status: 'pending',
-          createdAt: '2024-07-15T10:30:00Z'
-        },
-        {
-          id: 'report2',
-          type: 'answer',
-          title: 'Spam answer with promotional content',
-          content: 'Check out my website for the best deals...',
-          author: 'spammer789',
-          reporter: 'moderator1',
-          reason: 'Spam/promotional content',
-          status: 'pending',
-          createdAt: '2024-07-15T09:15:00Z'
-        }
-      ];
-
-      const mockUsers: UserManagement[] = [
-        {
-          id: 'user1',
-          username: 'baduser123',
-          email: 'bad@example.com',
-          reputation: 45,
-          status: 'active',
-          joinDate: '2024-06-01T00:00:00Z',
-          lastActivity: '2024-07-15T10:30:00Z',
-          reportCount: 3
-        },
-        {
-          id: 'user2',
-          username: 'spammer789',
-          email: 'spam@example.com',
-          reputation: 12,
-          status: 'suspended',
-          joinDate: '2024-07-01T00:00:00Z',
-          lastActivity: '2024-07-15T09:15:00Z',
-          reportCount: 5
-        }
-      ];
-
-      setStats(mockStats);
-      setReports(mockReports);
-      setUsers(mockUsers);
+      // Fetch users
+      const usersRes = await api.get('/users');
+      const usersData = usersRes.data.data?.users || [];
+      setUsers(usersData.map(u => ({
+        id: u._id || u.id,
+        username: u.username,
+        email: u.email,
+        reputation: u.reputation,
+        status: u.banned ? 'banned' : 'active',
+        joinDate: u.createdAt,
+        lastActivity: u.lastActive || u.updatedAt,
+        reportCount: u.reportCount || 0
+      })));
+      // Fetch stats (example: count from users/questions/answers endpoints)
+      const statsRes = await api.get('/admin/stats');
+      setStats(statsRes.data.data);
+      // Fetch reports if you have a moderation endpoint
+      // const reportsRes = await api.get('/admin/reports');
+      // setReports(reportsRes.data.data.reports);
     } catch (error) {
       console.error('Failed to load admin data:', error);
       toast.error('Failed to load admin data');
@@ -152,15 +112,44 @@ export default function AdminDashboard() {
     toast.success(`Report ${action === 'approve' ? 'resolved' : 'dismissed'} successfully`);
   };
 
-  const handleUserAction = (userId: string, action: 'suspend' | 'ban' | 'activate') => {
-    setUsers(prev =>
-      prev.map(user =>
-        user.id === userId
-          ? { ...user, status: action === 'activate' ? 'active' : action === 'suspend' ? 'suspended' : 'banned' }
-          : user
-      )
-    );
-    toast.success(`User ${action}d successfully`);
+  // Remove duplicate handleUserAction signature
+  const handleUserAction = async (userId: string, action: 'ban' | 'activate') => {
+    try {
+      if (action === 'ban') {
+        await api.post(`/admin/ban/${userId}`);
+      } else if (action === 'activate') {
+        await api.post(`/admin/unban/${userId}`);
+      }
+      loadAdminData();
+      toast.success(`User ${action}d successfully`);
+    } catch (err) {
+      toast.error('Failed to update user status');
+    }
+  };
+  // Broadcast message
+  const handleBroadcast = async (message: string) => {
+    try {
+      await api.post('/admin/broadcast', { message });
+      toast.success('Broadcast sent');
+    } catch (err) {
+      toast.error('Failed to send broadcast');
+    }
+  };
+
+  // Download user report
+  const handleDownloadReport = async () => {
+    try {
+      const res = await api.get('/admin/report/users', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'user_report.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      toast.error('Failed to download report');
+    }
   };
 
   if (!isAdmin) {
@@ -409,24 +398,14 @@ export default function AdminDashboard() {
                 
                 <div className="flex space-x-2">
                   {user.status === 'active' && (
-                    <>
-                      <button
-                        onClick={() => handleUserAction(user.id, 'suspend')}
-                        className="inline-flex items-center px-3 py-1 border border-yellow-300 text-sm font-medium rounded-md text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
-                      >
-                        <UserX className="w-4 h-4 mr-1" />
-                        Suspend
-                      </button>
-                      <button
-                        onClick={() => handleUserAction(user.id, 'ban')}
-                        className="inline-flex items-center px-3 py-1 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100"
-                      >
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Ban
-                      </button>
-                    </>
+                    <button
+                      onClick={() => handleUserAction(user.id, 'ban')}
+                      className="inline-flex items-center px-3 py-1 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100"
+                    >
+                      <XCircle className="w-4 h-4 mr-1" />
+                      Ban
+                    </button>
                   )}
-                  
                   {user.status !== 'active' && (
                     <button
                       onClick={() => handleUserAction(user.id, 'activate')}

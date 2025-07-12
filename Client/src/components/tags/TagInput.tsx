@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import type { Tag } from '../../types/index.ts';
+import * as tagService from '../../services/tagService.ts';
 
 interface TagInputProps {
   selectedTags: Tag[];
@@ -8,20 +9,6 @@ interface TagInputProps {
   placeholder?: string;
   maxTags?: number;
 }
-
-// Mock popular tags - in a real app this would come from an API
-const popularTags: Tag[] = [
-  { id: '1', name: 'javascript', count: 25000, createdAt: '2024-01-01' },
-  { id: '2', name: 'react', count: 18000, createdAt: '2024-01-01' },
-  { id: '3', name: 'typescript', count: 15000, createdAt: '2024-01-01' },
-  { id: '4', name: 'node.js', count: 12000, createdAt: '2024-01-01' },
-  { id: '5', name: 'python', count: 22000, createdAt: '2024-01-01' },
-  { id: '6', name: 'html', count: 20000, createdAt: '2024-01-01' },
-  { id: '7', name: 'css', count: 18500, createdAt: '2024-01-01' },
-  { id: '8', name: 'express', count: 8000, createdAt: '2024-01-01' },
-  { id: '9', name: 'mongodb', count: 9000, createdAt: '2024-01-01' },
-  { id: '10', name: 'api', count: 11000, createdAt: '2024-01-01' },
-];
 
 export default function TagInput({ 
   selectedTags, 
@@ -33,25 +20,41 @@ export default function TagInput({
   const [suggestions, setSuggestions] = useState<Tag[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (inputValue.trim()) {
-      const filtered = popularTags.filter(tag => 
-        tag.name.toLowerCase().includes(inputValue.toLowerCase()) &&
-        !selectedTags.some(selected => selected.id === tag.id)
-      );
-      setSuggestions(filtered);
-      setShowSuggestions(true);
-      setActiveSuggestionIndex(-1);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
+    const fetchSuggestions = async () => {
+      if (inputValue.trim()) {
+        setLoading(true);
+        try {
+          const allTags = await tagService.getTags(inputValue);
+          const filtered = allTags.filter(tag => 
+            !selectedTags.some(selected => (selected._id || selected.id) === (tag._id || tag.id))
+          );
+          setSuggestions(filtered);
+          setShowSuggestions(true);
+          setActiveSuggestionIndex(-1);
+        } catch (error) {
+          console.error('Failed to fetch tags:', error);
+          setSuggestions([]);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    };
+
+    const timeoutId = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(timeoutId);
   }, [inputValue, selectedTags]);
 
   const addTag = (tag: Tag) => {
-    if (selectedTags.length < maxTags && !selectedTags.some(t => t.id === tag.id)) {
+    const tagId = tag._id || tag.id;
+    const selectedId = (t: Tag) => t._id || t.id;
+    if (selectedTags.length < maxTags && !selectedTags.some(t => selectedId(t) === tagId)) {
       onTagsChange([...selectedTags, tag]);
       setInputValue('');
       setShowSuggestions(false);
@@ -59,12 +62,12 @@ export default function TagInput({
   };
 
   const removeTag = (tagId: string) => {
-    onTagsChange(selectedTags.filter(tag => tag.id !== tagId));
+    onTagsChange(selectedTags.filter(tag => (tag._id || tag.id) !== tagId));
   };
 
   const createNewTag = (name: string) => {
     const newTag: Tag = {
-      id: `new-${Date.now()}`,
+      _id: `new-${Date.now()}`,
       name: name.toLowerCase(),
       count: 0,
       createdAt: new Date().toISOString()
@@ -92,7 +95,9 @@ export default function TagInput({
       setShowSuggestions(false);
       setActiveSuggestionIndex(-1);
     } else if (e.key === 'Backspace' && !inputValue && selectedTags.length > 0) {
-      removeTag(selectedTags[selectedTags.length - 1].id);
+      const lastTag = selectedTags[selectedTags.length - 1];
+      const lastTagId = lastTag._id || lastTag.id;
+      if (lastTagId) removeTag(lastTagId);
     }
   };
 
@@ -101,13 +106,16 @@ export default function TagInput({
       <div className="flex flex-wrap gap-2 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 min-h-[42px]">
         {selectedTags.map((tag) => (
           <span
-            key={tag.id}
+            key={tag._id || tag.id}
             className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-md"
           >
             {tag.name}
             <button
               type="button"
-              onClick={() => removeTag(tag.id)}
+              onClick={() => {
+                const tagId = tag._id || tag.id;
+                if (tagId) removeTag(tagId);
+              }}
               className="ml-1 hover:text-blue-600 dark:hover:text-blue-300"
             >
               <X className="w-3 h-3" />
@@ -135,7 +143,7 @@ export default function TagInput({
         <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
           {suggestions.map((tag, index) => (
             <button
-              key={tag.id}
+              key={tag._id || tag.id}
               type="button"
               onClick={() => addTag(tag)}
               className={`w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between ${
@@ -144,7 +152,7 @@ export default function TagInput({
             >
               <span className="text-gray-900 dark:text-white">{tag.name}</span>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {tag.count.toLocaleString()} questions
+                {(tag.count || 0).toLocaleString()} questions
               </span>
             </button>
           ))}

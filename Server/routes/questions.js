@@ -21,6 +21,9 @@ router.get('/', optionalAuth, async (req, res) => {
       author
     } = req.query;
 
+    console.log('Questions GET request params:', { page, limit, sort, tags, search, author });
+    console.log('Full query object:', req.query);
+
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const query = { isActive: true };
 
@@ -32,6 +35,7 @@ router.get('/', optionalAuth, async (req, res) => {
 
     if (author) {
       query.author = author;
+      console.log('Filtering by author:', author);
     }
 
     if (search) {
@@ -179,6 +183,36 @@ router.post('/', authenticateToken, validateQuestion, handleValidationErrors, as
     });
 
     await question.save();
+
+    // Mention detection: find @username in description
+    const mentionRegex = /@([a-zA-Z0-9_]+)/g;
+    const mentionedUsernames = [];
+    let match;
+    while ((match = mentionRegex.exec(description)) !== null) {
+      mentionedUsernames.push(match[1]);
+    }
+    if (mentionedUsernames.length > 0) {
+      const mentionedUsers = await User.find({ username: { $in: mentionedUsernames } });
+      for (const mentionedUser of mentionedUsers) {
+        if (mentionedUser._id.toString() !== req.user._id.toString()) {
+          const mentionNotification = new Notification({
+            recipient: mentionedUser._id,
+            sender: req.user._id,
+            type: 'mention',
+            message: `${req.user.username} mentioned you in a question`,
+            relatedQuestion: question._id
+          });
+          await mentionNotification.save();
+          // Emit real-time notification
+          const io = req.app.get('io');
+          io.to(`user-${mentionedUser._id}`).emit('new-notification', {
+            type: 'mention',
+            message: mentionNotification.message,
+            questionId: question._id
+          });
+        }
+      }
+    }
 
     // Populate the question for response
     const populatedQuestion = await Question.findById(question._id)

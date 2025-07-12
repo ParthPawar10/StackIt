@@ -1,13 +1,9 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import type { AuthState, User, ApiResponse } from '../types';
+import type { AuthContextType as AuthContextTypeDef } from '../types/auth';
 import api from '../utils/api';
 
-interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
-  updateUser: (user: User) => void;
-}
+type AuthContextType = AuthContextTypeDef;
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -134,11 +130,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const value: AuthContextType = {
-    ...state,
-    login,
-    register,
+    user: state.user,
+    isAuthenticated: state.isAuthenticated,
+    loading: state.isLoading,
+    login: async (credentials) => {
+      await login(credentials.email, credentials.password);
+      return { user: state.user!, token: state.token! };
+    },
+    register: async (userData) => {
+      await register(userData.username, userData.email, userData.password);
+      return { user: state.user!, token: state.token! };
+    },
     logout,
     updateUser,
+    updateUserFromToken: async (token: string) => {
+      // Implement if needed
+      return state.user!;
+    },
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

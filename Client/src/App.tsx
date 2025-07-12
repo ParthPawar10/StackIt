@@ -14,6 +14,9 @@ import AdminDashboard from './pages/AdminDashboard.tsx';
 import Auth from './pages/Auth.tsx';
 import ProtectedRoute from './components/common/ProtectedRoute.tsx';
 import SettingsPage from './pages/Settings.tsx';
+import MyQuestions from './pages/MyQuestions.tsx';
+import EditQuestionPage from './pages/EditQuestionPage.tsx';
+import AuthTest from './pages/AuthTest.tsx';
 
 function App() {
   return (
@@ -33,19 +36,24 @@ function App() {
             />
             <Routes>
               <Route path="/auth" element={<Auth />} />
-              <Route path="settings" element={
-  <ProtectedRoute>
-    <SettingsPage />
-  </ProtectedRoute>
-} />
-
+              <Route path="/auth-test" element={<AuthTest />} />
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
                 <Route path="questions" element={<QuestionsPage />} />
                 <Route path="questions/:id" element={<QuestionDetailPage />} />
+                <Route path="questions/:id/edit" element={
+                  <ProtectedRoute>
+                    <EditQuestionPage />
+                  </ProtectedRoute>
+                } />
                 <Route path="ask" element={
                   <ProtectedRoute>
                     <AskQuestionPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="my-questions" element={
+                  <ProtectedRoute>
+                    <MyQuestions />
                   </ProtectedRoute>
                 } />
                 <Route path="profile/:userId?" element={
@@ -55,6 +63,11 @@ function App() {
                 } />
                 <Route path="tags" element={<TagsPage />} />
                 <Route path="users" element={<UsersPage />} />
+                <Route path="settings" element={
+                  <ProtectedRoute>
+                    <SettingsPage />
+                  </ProtectedRoute>
+                } />
                 <Route path="admin/*" element={
                   <ProtectedRoute requireAdmin>
                     <AdminDashboard />

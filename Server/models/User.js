@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  banned: {
+    type: Boolean,
+    default: false
+  },
   avatar: {
     type: String,
     default: null
@@ -90,10 +94,11 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Remove password from JSON output
+// Remove password from JSON output and add id field
 userSchema.methods.toJSON = function() {
   const userObject = this.toObject();
   delete userObject.password;
+  userObject.id = userObject._id.toString();
   return userObject;
 };
 

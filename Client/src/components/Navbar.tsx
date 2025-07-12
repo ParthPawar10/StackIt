@@ -10,6 +10,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import NotificationDropdown from './notifications/NotificationDropdown';
 import { useAuth } from '../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
@@ -62,8 +63,9 @@ const Navbar: React.FC = () => {
             ))}
           </div>
 
-          {/* Desktop Auth */}
+          {/* Desktop Auth & Notifications */}
           <div className="hidden md:flex items-center space-x-4">
+            {isAuthenticated && <NotificationDropdown />}
             {isAuthenticated ? (
               <>
                 <Link

@@ -6,6 +6,8 @@ import type { Question, Answer } from '../types/index.ts';
 import { useAuth } from '../context/AuthContext.tsx';
 import RichTextEditor from '../components/editor/RichTextEditor.tsx';
 import toast from 'react-hot-toast';
+import * as questionService from '../services/questionService.ts';
+import * as answerService from '../services/answerService.ts';
 
 export default function QuestionDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,82 +23,19 @@ export default function QuestionDetailPage() {
   }, [id]);
 
   const loadQuestionAndAnswers = async () => {
+    if (!id) return;
+    
     try {
       setLoading(true);
-      // Mock data - replace with actual API call
-      const mockQuestion: Question = {
-        id: id || '1',
-        title: 'How to implement authentication in React with TypeScript?',
-        content: '<p>I\'m building a React application with TypeScript and need to implement user authentication. I want to use JWT tokens and have the following requirements:</p><ul><li>Login and registration forms</li><li>Protected routes</li><li>Token refresh mechanism</li><li>Persistent login state</li></ul><p>What\'s the best approach to implement this? I\'ve looked at various libraries but I\'m not sure which one to choose.</p><pre><code>// Example of what I\'m trying to achieve\nconst ProtectedRoute = ({ children }) => {\n  const { isAuthenticated } = useAuth();\n  return isAuthenticated ? children : <Navigate to="/login" />;\n};</code></pre>',
-        authorId: 'user1',
-        author: {
-          id: 'user1',
-          username: 'johndoe',
-          reputation: 1250,
-          avatar: undefined
-        },
-        tags: [
-          { id: 'react', name: 'react', count: 1500, createdAt: '2024-01-01' },
-          { id: 'typescript', name: 'typescript', count: 1200, createdAt: '2024-01-01' },
-          { id: 'auth', name: 'authentication', count: 800, createdAt: '2024-01-01' }
-        ],
-        votes: 15,
-        views: 342,
-        answers: [],
-        answerCount: 2,
-        hasAcceptedAnswer: true,
-        acceptedAnswerId: 'answer1',
-        createdAt: '2024-07-10T10:30:00Z',
-        updatedAt: '2024-07-10T10:30:00Z',
-        isEdited: false,
-        isClosed: false,
-        isBookmarked: false,
-        userVote: null
-      };
-
-      const mockAnswers: Answer[] = [
-        {
-          id: 'answer1',
-          content: '<p>For implementing authentication in React with TypeScript, I recommend using React Context API along with a custom hook. Here\'s a comprehensive solution:</p><h3>1. Create an Auth Context</h3><pre><code>// AuthContext.tsx\ninterface AuthContextType {\n  user: User | null;\n  login: (credentials: LoginCredentials) => Promise<void>;\n  logout: () => void;\n  isAuthenticated: boolean;\n}\n\nconst AuthContext = createContext<AuthContextType | undefined>(undefined);</code></pre><p>This approach gives you:</p><ul><li>Type safety with TypeScript</li><li>Centralized auth state management</li><li>Easy integration with protected routes</li><li>Token refresh capabilities</li></ul>',
-          questionId: id || '1',
-          authorId: 'user2',
-          author: {
-            id: 'user2',
-            username: 'janedoe',
-            reputation: 2100,
-            avatar: undefined
-          },
-          votes: 8,
-          isAccepted: true,
-          createdAt: '2024-07-10T11:15:00Z',
-          updatedAt: '2024-07-10T11:15:00Z',
-          isEdited: false,
-          comments: [],
-          userVote: null
-        },
-        {
-          id: 'answer2',
-          content: '<p>Another approach is to use a third-party library like Auth0 or Firebase Auth, which can save you a lot of development time:</p><pre><code>npm install @auth0/auth0-react</code></pre><p>This provides out-of-the-box features like:</p><ul><li>Social login integration</li><li>Multi-factor authentication</li><li>User management</li><li>Security best practices</li></ul>',
-          questionId: id || '1',
-          authorId: 'user3',
-          author: {
-            id: 'user3',
-            username: 'alexsmith',
-            reputation: 890,
-            avatar: undefined
-          },
-          votes: 3,
-          isAccepted: false,
-          createdAt: '2024-07-11T09:20:00Z',
-          updatedAt: '2024-07-11T09:20:00Z',
-          isEdited: false,
-          comments: [],
-          userVote: null
-        }
-      ];
-
-      setQuestion(mockQuestion);
-      setAnswers(mockAnswers);
+      
+      // Load question and answers from API
+      const [questionData, answersData] = await Promise.all([
+        questionService.getQuestionById(id),
+        answerService.getAnswersByQuestion(id)
+      ]);
+      
+      setQuestion(questionData);
+      setAnswers(answersData);
     } catch (error) {
       console.error('Failed to load question:', error);
       toast.error('Failed to load question');
@@ -105,9 +44,26 @@ export default function QuestionDetailPage() {
     }
   };
 
-  const handleVote = (type: 'up' | 'down', targetId: string, targetType: 'question' | 'answer') => {
-    console.log(`Vote ${type} on ${targetType} ${targetId}`);
-    toast.success(`Voted ${type}!`);
+  const handleVote = async (type: 'up' | 'down', targetId: string, targetType: 'question' | 'answer') => {
+    if (!isAuthenticated) {
+      toast.error('Please login to vote');
+      return;
+    }
+
+    try {
+      if (targetType === 'question') {
+        await questionService.voteQuestion(targetId, type);
+        toast.success(`Voted ${type}!`);
+        loadQuestionAndAnswers(); // Reload to get updated vote counts
+      } else {
+        await answerService.voteAnswer(targetId, type);
+        toast.success(`Voted ${type}!`);
+        loadQuestionAndAnswers(); // Reload to get updated vote counts
+      }
+    } catch (error) {
+      console.error('Failed to vote:', error);
+      toast.error('Failed to vote');
+    }
   };
 
   const handleBookmark = () => {
@@ -115,9 +71,21 @@ export default function QuestionDetailPage() {
     toast.success('Bookmarked!');
   };
 
-  const handleAcceptAnswer = (answerId: string) => {
-    console.log(`Accept answer ${answerId}`);
-    toast.success('Answer accepted!');
+  const handleAcceptAnswer = async (answerId: string) => {
+    if (!isAuthenticated) {
+      toast.error('Please login to accept answers');
+      return;
+    }
+
+    try {
+      // Note: You'll need to implement this endpoint in your backend
+      console.log(`Accept answer ${answerId}`);
+      toast.success('Answer accepted!');
+      loadQuestionAndAnswers(); // Reload to show updated status
+    } catch (error) {
+      console.error('Failed to accept answer:', error);
+      toast.error('Failed to accept answer');
+    }
   };
 
   const handleSubmitAnswer = async () => {
@@ -126,15 +94,29 @@ export default function QuestionDetailPage() {
       return;
     }
 
+    if (!isAuthenticated) {
+      toast.error('Please login to answer');
+      return;
+    }
+
+    if (!id) {
+      toast.error('Question ID not found');
+      return;
+    }
+
     setIsSubmittingAnswer(true);
     try {
-      // Mock API call
-      console.log('Submitting answer:', answerContent);
+      await answerService.createAnswer({
+        content: answerContent,
+        questionId: id
+      });
+      
       toast.success('Answer posted successfully!');
       setAnswerContent('');
-      // Reload answers
+      // Reload to show the new answer
       loadQuestionAndAnswers();
     } catch (error) {
+      console.error('Failed to post answer:', error);
       toast.error('Failed to post answer');
     } finally {
       setIsSubmittingAnswer(false);
@@ -166,7 +148,10 @@ export default function QuestionDetailPage() {
           {/* Vote Column */}
           <div className="flex flex-col items-center space-y-2 min-w-[60px]">
             <button
-              onClick={() => handleVote('up', question.id, 'question')}
+              onClick={() => {
+                const questionId = question._id || question.id;
+                if (questionId) handleVote('up', questionId, 'question');
+              }}
               className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 ${
                 question.userVote === 'up' ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
               }`}
@@ -174,14 +159,17 @@ export default function QuestionDetailPage() {
               <ArrowUp className="w-6 h-6" />
             </button>
             <span className={`text-xl font-bold ${
-              question.votes > 0 ? 'text-green-600 dark:text-green-400' :
-              question.votes < 0 ? 'text-red-600 dark:text-red-400' :
+              question.voteScore > 0 ? 'text-green-600 dark:text-green-400' :
+              question.voteScore < 0 ? 'text-red-600 dark:text-red-400' :
               'text-gray-600 dark:text-gray-400'
             }`}>
-              {question.votes}
+              {question.voteScore}
             </span>
             <button
-              onClick={() => handleVote('down', question.id, 'question')}
+              onClick={() => {
+                const questionId = question._id || question.id;
+                if (questionId) handleVote('down', questionId, 'question');
+              }}
               className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 ${
                 question.userVote === 'down' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'
               }`}
@@ -213,7 +201,7 @@ export default function QuestionDetailPage() {
 
             <div 
               className="prose dark:prose-invert max-w-none mb-6"
-              dangerouslySetInnerHTML={{ __html: question.content }}
+              dangerouslySetInnerHTML={{ __html: question.description || question.content || '' }}
             />
 
             {/* Tags */}
@@ -240,7 +228,7 @@ export default function QuestionDetailPage() {
                   <Flag className="w-4 h-4" />
                   <span>Flag</span>
                 </button>
-                {user?.id === question.authorId && (
+                {user?.id === (question.author.id || question.author._id) && (
                   <>
                     <button className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                       <Edit className="w-4 h-4" />
@@ -323,7 +311,7 @@ export default function QuestionDetailPage() {
                     <ArrowDown className="w-5 h-5" />
                   </button>
                   
-                  {user?.id === question.authorId && !answer.isAccepted && (
+                  {user?.id === (question.author.id || question.author._id) && !answer.isAccepted && (
                     <button
                       onClick={() => handleAcceptAnswer(answer.id)}
                       className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-green-600"
@@ -362,7 +350,7 @@ export default function QuestionDetailPage() {
                         <Flag className="w-4 h-4" />
                         <span>Flag</span>
                       </button>
-                      {user?.id === answer.authorId && (
+                      {user?.id === answer.author.id && (
                         <>
                           <button className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                             <Edit className="w-4 h-4" />
@@ -443,7 +431,7 @@ export default function QuestionDetailPage() {
             You must be logged in to answer this question.
           </p>
           <Link
-            to="/login"
+            to="/auth"
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Sign In

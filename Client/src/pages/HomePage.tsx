@@ -4,10 +4,12 @@ import { Plus, TrendingUp, Clock, MessageSquare } from 'lucide-react';
 import type { Question } from '../types/index.ts';
 import { useAuth } from '../context/AuthContext.tsx';
 import QuestionCard from '../components/questions/QuestionCard.tsx';
+import * as questionService from '../services/questionService.ts';
 
 export default function HomePage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -17,69 +19,18 @@ export default function HomePage() {
   const loadQuestions = async () => {
     try {
       setLoading(true);
-      // Mock data for now
-      const mockQuestions: Question[] = [
-        {
-          id: '1',
-          title: 'How to implement authentication in React with TypeScript?',
-          content: 'I\'m building a React application with TypeScript and need to implement user authentication...',
-          authorId: 'user1',
-          author: {
-            id: 'user1',
-            username: 'johndoe',
-            reputation: 1250,
-            avatar: undefined
-          },
-          tags: [
-            { id: 'react', name: 'react', count: 1500, createdAt: '2024-01-01' },
-            { id: 'typescript', name: 'typescript', count: 1200, createdAt: '2024-01-01' },
-            { id: 'auth', name: 'authentication', count: 800, createdAt: '2024-01-01' }
-          ],
-          votes: 15,
-          views: 342,
-          answers: [],
-          answerCount: 3,
-          hasAcceptedAnswer: true,
-          acceptedAnswerId: 'answer1',
-          createdAt: '2024-07-10T10:30:00Z',
-          updatedAt: '2024-07-10T10:30:00Z',
-          isEdited: false,
-          isClosed: false,
-          isBookmarked: false,
-          userVote: null
-        },
-        {
-          id: '2',
-          title: 'Best practices for handling errors in Node.js applications',
-          content: 'What are the recommended approaches for error handling in Node.js applications...',
-          authorId: 'user2',
-          author: {
-            id: 'user2',
-            username: 'janedoe',
-            reputation: 2100,
-            avatar: undefined
-          },
-          tags: [
-            { id: 'nodejs', name: 'node.js', count: 2000, createdAt: '2024-01-01' },
-            { id: 'error-handling', name: 'error-handling', count: 450, createdAt: '2024-01-01' },
-            { id: 'best-practices', name: 'best-practices', count: 600, createdAt: '2024-01-01' }
-          ],
-          votes: 8,
-          views: 156,
-          answers: [],
-          answerCount: 1,
-          hasAcceptedAnswer: false,
-          createdAt: '2024-07-12T08:15:00Z',
-          updatedAt: '2024-07-12T08:15:00Z',
-          isEdited: false,
-          isClosed: false,
-          isBookmarked: false,
-          userVote: null
-        }
-      ];
-      setQuestions(mockQuestions);
+      setError(null);
+      
+      console.log('Loading questions...');
+      const response = await questionService.getQuestions({ 
+        limit: 10, 
+        sort: 'recent' 
+      });
+      console.log('Questions response:', response);
+      setQuestions(response.questions || []);
     } catch (error) {
       console.error('Failed to load questions:', error);
+      setError('Failed to connect to server. Error: ' + error);
     } finally {
       setLoading(false);
     }
@@ -88,7 +39,26 @@ export default function HomePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading questions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-4">{error}</div>
+          <button 
+            onClick={loadQuestions}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -178,7 +148,7 @@ export default function HomePage() {
           </div>
         ) : (
           questions.map((question) => (
-            <QuestionCard key={question.id} question={question} />
+            <QuestionCard key={question._id} question={question} />
           ))
         )}
       </div>

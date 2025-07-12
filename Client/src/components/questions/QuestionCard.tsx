@@ -11,12 +11,12 @@ interface QuestionCardProps {
 export default function QuestionCard({ question, showFullContent = false }: QuestionCardProps) {
   const handleVote = (type: 'up' | 'down') => {
     // TODO: Implement voting logic
-    console.log(`Vote ${type} on question ${question.id}`);
+    console.log(`Vote ${type} on question ${question._id || question.id}`);
   };
 
   const handleBookmark = () => {
     // TODO: Implement bookmark logic
-    console.log(`Bookmark question ${question.id}`);
+    console.log(`Bookmark question ${question._id || question.id}`);
   };
 
   return (
@@ -35,11 +35,11 @@ export default function QuestionCard({ question, showFullContent = false }: Ques
               <ArrowUp className="w-5 h-5" />
             </button>
             <span className={`font-medium ${
-              question.votes > 0 ? 'text-green-600 dark:text-green-400' :
-              question.votes < 0 ? 'text-red-600 dark:text-red-400' :
+              question.voteScore > 0 ? 'text-green-600 dark:text-green-400' :
+              question.voteScore < 0 ? 'text-red-600 dark:text-red-400' :
               'text-gray-600 dark:text-gray-400'
             }`}>
-              {question.votes}
+              {question.voteScore}
             </span>
             <button
               onClick={() => handleVote('down')}
@@ -53,14 +53,14 @@ export default function QuestionCard({ question, showFullContent = false }: Ques
 
           {/* Answer Count */}
           <div className={`flex flex-col items-center p-2 rounded border ${
-            question.hasAcceptedAnswer 
+            question.acceptedAnswer 
               ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20' 
               : question.answerCount > 0 
                 ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
                 : 'border-gray-200 dark:border-gray-600'
           }`}>
             <span className={`font-medium ${
-              question.hasAcceptedAnswer 
+              question.acceptedAnswer 
                 ? 'text-green-700 dark:text-green-300' 
                 : question.answerCount > 0 
                   ? 'text-blue-700 dark:text-blue-300'
@@ -85,7 +85,7 @@ export default function QuestionCard({ question, showFullContent = false }: Ques
           {/* Title */}
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             <Link 
-              to={`/questions/${question.id}`}
+              to={`/questions/${question._id || question.id}`}
               className="hover:text-blue-600 dark:hover:text-blue-400"
             >
               {question.title}
@@ -97,21 +97,21 @@ export default function QuestionCard({ question, showFullContent = false }: Ques
             {showFullContent ? (
               <div 
                 className="prose dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: question.content }}
+                dangerouslySetInnerHTML={{ __html: question.description || question.content || '' }}
               />
             ) : (
               <p className="line-clamp-3">
-                {question.content.replace(/<[^>]*>/g, '').substring(0, 200)}
-                {question.content.length > 200 && '...'}
+                {((question.description || question.content || '').replace(/<[^>]*>/g, '').substring(0, 200))}
+                {(question.description || question.content || '').length > 200 && '...'}
               </p>
             )}
           </div>
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {question.tags.map((tag) => (
+            {question.tags && question.tags.map((tag) => (
               <Link
-                key={tag.id}
+                key={tag._id || tag.id || tag.name}
                 to={`/tags/${tag.name}`}
                 className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
               >
@@ -144,7 +144,7 @@ export default function QuestionCard({ question, showFullContent = false }: Ques
             {/* Author Info */}
             <div className="flex items-center space-x-2 text-sm">
               <Link 
-                to={`/users/${question.author.id}`}
+                to={`/users/${question.author._id || question.author.id}`}
                 className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:underline"
               >
                 {question.author.avatar ? (

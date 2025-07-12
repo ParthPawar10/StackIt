@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Bell, User, Menu, X, LogOut, Settings } from 'lucide-react';
+import { Search, Bell, User, Menu, X, LogOut, Settings, Plus, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useNotifications } from '../../context/NotificationContext.tsx';
 import SearchBar from './SearchBar.tsx';
 import NotificationDropdown from '../notifications/NotificationDropdown.tsx';
 import AuthModals from '../auth/AuthModals.tsx';
+import QuickActions from './QuickActions.tsx';
 import logo from '../../assets/logo1.png';
 
 export default function Header() {
@@ -52,6 +53,11 @@ export default function Header() {
 
               {isAuthenticated ? (
                 <>
+                  {/* Quick Actions */}
+                  <div className="hidden sm:block">
+                    <QuickActions />
+                  </div>
+
                   {/* Notifications */}
                   <div className="relative">
                     <NotificationDropdown />
@@ -195,6 +201,26 @@ export default function Header() {
                         {user?.email}
                       </p>
                     </div>
+                  </div>
+                  
+                  {/* Quick Actions - Mobile */}
+                  <div className="mb-3 grid grid-cols-2 gap-2">
+                    <Link
+                      to="/ask"
+                      className="flex items-center justify-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Ask Question
+                    </Link>
+                    <Link
+                      to="/my-questions"
+                      className="flex items-center justify-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <MessageSquare className="w-4 h-4 mr-1" />
+                      My Questions
+                    </Link>
                   </div>
                   
                   <Link
