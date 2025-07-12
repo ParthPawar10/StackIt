@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, User as UserIcon, Lock, AlertCircle } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const Auth: React.FC = () => {
-  const { isAuthenticated, login, register, isLoading } = useAuth();
+  const { isAuthenticated, login, register, loading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -17,7 +19,8 @@ const Auth: React.FC = () => {
 
   // Redirect if already authenticated
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    const from = (location.state as any)?.from?.pathname || '/';
+    return <Navigate to={from} replace />;
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,10 +37,18 @@ const Auth: React.FC = () => {
 
     try {
       if (isLoginMode) {
-        await login(formData.email, formData.password);
+        await login({ email: formData.email, password: formData.password });
       } else {
-        await register(formData.username, formData.email, formData.password);
+        await register({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password
+        });
       }
+      
+      // Redirect to intended page or home after successful auth
+      const from = (location.state as any)?.from?.pathname || '/';
+      navigate(from, { replace: true });
     } catch (err: any) {
       if (err.response?.data?.errors) {
         const errors = err.response.data.errors.map((error: any) => error.msg);
@@ -198,10 +209,10 @@ const Auth: React.FC = () => {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              {isLoading ? (
+              {loading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
               ) : (
                 isLoginMode ? 'Sign In' : 'Create Account'

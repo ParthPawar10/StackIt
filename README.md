@@ -1,4 +1,152 @@
-# StackIt - Full-Featured Q&A Platform
+# StackIt - Stack Overflow Clone
+
+A full-stack Q&A platform built with React and Node.js.
+
+## 🚀 Features
+
+- User authentication and authorization
+- Ask and answer questions
+- Tag system for categorizing questions
+- Rich text editor for writing questions and answers
+- User profiles and dashboards
+- Real-time notifications
+- File upload support
+- Admin dashboard
+
+## 🛠️ Tech Stack
+
+### Frontend (Client)
+- **React 19** with TypeScript
+- **Vite** for build tooling
+- **Tailwind CSS** for styling
+- **Radix UI** for components
+- **React Router** for navigation
+- **Axios** for API calls
+- **React Hook Form** with Zod validation
+- **React Quill** for rich text editing
+
+### Backend (Server)
+- **Node.js** with Express
+- **MongoDB** with Mongoose
+- **JWT** for authentication
+- **Bcrypt** for password hashing
+- **Cloudinary** for image uploads
+- **Socket.io** for real-time features
+- **Nodemailer** for email notifications
+
+## 📋 Prerequisites
+
+- Node.js (v20.19.0 or higher)
+- MongoDB (local or Atlas)
+- npm or yarn
+
+## 🏃‍♂️ Quick Start
+
+### 1. Clone the repository
+```bash
+git clone <repository-url>
+cd StackIt
+```
+
+### 2. Install all dependencies
+```bash
+npm run install:all
+```
+
+### 3. Configure environment variables
+Copy `.env.example` to `.env` in the Server directory and update the values:
+```bash
+cd Server
+cp .env.example .env
+```
+
+Update the following variables in `Server/.env`:
+- `MONGODB_URI`: Your MongoDB connection string
+- `JWT_SECRET`: A secure random string
+- `CLOUDINARY_*`: Your Cloudinary credentials (for image uploads)
+- `EMAIL_*`: Email service credentials (for notifications)
+
+### 4. Start the development servers
+```bash
+# Run both client and server concurrently
+npm run dev
+
+# Or run them separately:
+npm run server:dev  # Server on http://localhost:5000
+npm run client:dev  # Client on http://localhost:5173
+```
+
+## 📁 Project Structure
+
+```
+StackIt/
+├── Client/                 # React frontend
+│   ├── src/
+│   │   ├── components/    # Reusable components
+│   │   ├── pages/         # Page components
+│   │   ├── services/      # API services
+│   │   ├── context/       # React context
+│   │   ├── types/         # TypeScript types
+│   │   └── utils/         # Utility functions
+│   └── public/
+├── Server/                # Node.js backend
+│   ├── controllers/       # Business logic
+│   ├── middleware/        # Custom middleware
+│   ├── models/           # Database models
+│   ├── routes/           # API routes
+│   └── utils/            # Server utilities
+└── package.json          # Root package for running both
+```
+
+## 🔌 API Endpoints
+
+The server provides the following API endpoints:
+
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/questions` - Get questions
+- `POST /api/questions` - Create a question
+- `GET /api/tags` - Get tags
+- `POST /api/answers` - Post an answer
+- `GET /api/users/profile` - Get user profile
+- And more...
+
+## 🌐 Development
+
+### Client Development
+The React app runs on `http://localhost:5173` and is configured to proxy API requests to the backend during development.
+
+### Server Development
+The Express server runs on `http://localhost:5000` with auto-restart enabled via nodemon.
+
+### Database
+Make sure MongoDB is running locally or configure MongoDB Atlas connection in the `.env` file.
+
+## 🚀 Production Deployment
+
+### Client Build
+```bash
+cd Client
+npm run build
+```
+
+### Server Start
+```bash
+cd Server
+npm start
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📝 License
+
+This project is licensed under the MIT License. - Full-Featured Q&A Platform
 Solution for **Problem Statement 2** – Odoo Hackathon 2025
 
 A comprehensive Stack Overflow-like platform built with React, TypeScript, Node.js, and modern web technologies.

@@ -20,8 +20,8 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
   }
 
   if (!isAuthenticated) {
-    // Redirect to home page with a state to show login modal
-    return <Navigate to="/" state={{ from: location, showLogin: true }} replace />;
+    // Redirect to auth page to login
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   if (requireAdmin && user?.role !== 'admin' && user?.role !== 'moderator') {

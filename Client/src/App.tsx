@@ -11,6 +11,7 @@ import ProfilePage from './pages/ProfilePage.tsx';
 import TagsPage from './pages/TagsPage.tsx';
 import UsersPage from './pages/UsersPage.tsx';
 import AdminDashboard from './pages/AdminDashboard.tsx';
+import Auth from './pages/Auth.tsx';
 import ProtectedRoute from './components/common/ProtectedRoute.tsx';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
               }}
             />
             <Routes>
+              <Route path="/auth" element={<Auth />} />
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
                 <Route path="questions" element={<QuestionsPage />} />

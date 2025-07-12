@@ -64,42 +64,75 @@ export default function Header() {
 
                   {/* User Menu */}
                   <div className="relative group">
-                    <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                       {user?.avatar ? (
-                        <img src={user.avatar} alt={user.username} className="w-8 h-8 rounded-full" />
+                        <img 
+                          src={user.avatar} 
+                          alt={user.username} 
+                          className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600" 
+                        />
                       ) : (
-                        <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                          <User className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                          {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
                         </div>
                       )}
                       <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">
                         {user?.username}
                       </span>
+                      <svg className="hidden sm:block w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
                     </button>
 
                     {/* User Dropdown */}
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <div className="py-2">
+                        {/* User Info */}
+                        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+                          <div className="flex items-center space-x-3">
+                            {user?.avatar ? (
+                              <img 
+                                src={user.avatar} 
+                                alt={user.username} 
+                                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600" 
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {user?.username}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                {user?.email}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Menu Items */}
                         <Link
                           to="/profile"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
-                          <User className="w-4 h-4 inline mr-2" />
-                          Profile
+                          <User className="w-4 h-4 mr-3" />
+                          My Profile
                         </Link>
                         <Link
                           to="/settings"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
-                          <Settings className="w-4 h-4 inline mr-2" />
+                          <Settings className="w-4 h-4 mr-3" />
                           Settings
                         </Link>
                         <hr className="my-2 border-gray-200 dark:border-gray-600" />
                         <button
                           onClick={handleLogout}
-                          className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         >
-                          <LogOut className="w-4 h-4 inline mr-2" />
+                          <LogOut className="w-4 h-4 mr-3" />
                           Sign out
                         </button>
                       </div>
@@ -136,23 +169,48 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 dark:border-gray-700">
+          <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             <div className="px-4 py-3 space-y-3">
               <SearchBar />
-              {isAuthenticated && (
+              {isAuthenticated ? (
                 <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
+                  {/* User Info in Mobile */}
+                  <div className="flex items-center space-x-3 px-3 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg mb-3">
+                    {user?.avatar ? (
+                      <img 
+                        src={user.avatar} 
+                        alt={user.username} 
+                        className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600" 
+                      />
+                    ) : (
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                        {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {user?.username}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </div>
+                  
                   <Link
                     to="/profile"
-                    className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white"
+                    className="flex items-center px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Profile
+                    <User className="w-5 h-5 mr-3" />
+                    My Profile
                   </Link>
                   <Link
                     to="/settings"
-                    className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white"
+                    className="flex items-center px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
+                    <Settings className="w-5 h-5 mr-3" />
                     Settings
                   </Link>
                   <button
@@ -160,9 +218,31 @@ export default function Header() {
                       handleLogout();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="block w-full text-left px-3 py-2 text-base font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                    className="flex items-center w-full px-3 py-2 text-base font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   >
+                    <LogOut className="w-5 h-5 mr-3" />
                     Sign out
+                  </button>
+                </div>
+              ) : (
+                <div className="pt-3 border-t border-gray-200 dark:border-gray-600 space-y-2">
+                  <button
+                    onClick={() => {
+                      handleAuthClick('login');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Log in
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleAuthClick('register');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-2 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Sign up
                   </button>
                 </div>
               )}

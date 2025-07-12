@@ -1,0 +1,16 @@
+{
+  "name": "stackit",
+  "version": "1.0.0",
+  "description": "StackIt - A Stack Overflow clone",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd Server && npm run dev",
+    "client:dev": "cd Client && npm run dev",
+    "server:start": "cd Server && npm start",
+    "client:build": "cd Client && npm run build",
+    "install:all": "npm install && cd Server && npm install && cd ../Client && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

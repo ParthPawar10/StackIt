@@ -1,51 +1,31 @@
-import axios from 'axios';
+import api from '../utils/api';
 import type { Notification } from '../types/index.ts';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
-const notificationAPI = axios.create({
-  baseURL: `${API_BASE_URL}/notifications`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add token to requests
-notificationAPI.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
 export const getNotifications = async (page = 1, limit = 20): Promise<Notification[]> => {
-  const response = await notificationAPI.get('/', {
+  const response = await api.get('/notifications', {
     params: { page, limit }
   });
-  return response.data.notifications;
+  return response.data.data.notifications; // Server returns nested format
 };
 
 export const getUnreadCount = async (): Promise<number> => {
-  const response = await notificationAPI.get('/unread-count');
-  return response.data.count;
+  // Get unread count from the main notifications endpoint
+  const response = await api.get('/notifications', {
+    params: { page: 1, limit: 1 } // Just get one notification to get the count
+  });
+  return response.data.data.unreadCount; // Server returns nested format
 };
 
 export const markAsRead = async (notificationId: string): Promise<void> => {
-  await notificationAPI.patch(`/${notificationId}/read`);
+  await api.put(`/notifications/${notificationId}/read`); // Changed from PATCH to PUT
 };
 
 export const markAllAsRead = async (): Promise<void> => {
-  await notificationAPI.patch('/mark-all-read');
+  await api.put('/notifications/read-all'); // Corrected endpoint path
 };
 
 export const deleteNotification = async (notificationId: string): Promise<void> => {
-  await notificationAPI.delete(`/${notificationId}`);
+  await api.delete(`/notifications/${notificationId}`);
 };
 
 export const updateNotificationSettings = async (settings: {
@@ -56,5 +36,5 @@ export const updateNotificationSettings = async (settings: {
   comments: boolean;
   votes: boolean;
 }): Promise<void> => {
-  await notificationAPI.put('/settings', settings);
+  await api.put('/notifications/settings', settings);
 };
