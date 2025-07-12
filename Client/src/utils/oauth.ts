@@ -46,8 +46,6 @@ export const initiateOAuthLogin = (provider: 'google' | 'github') => {
       } else {
         console.log('❌ Message received but not OAuth success or missing token');
       }
-
-      console.log('OAUTH MESSAGE RECEIVED:', event.data, event.origin);
     };
 
     window.addEventListener('message', messageListener);

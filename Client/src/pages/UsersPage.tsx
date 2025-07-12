@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import api from '../utils/api';
 import { Search, Users as UsersIcon, Trophy, Calendar, MapPin, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
@@ -18,173 +19,10 @@ export default function UsersPage() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      // Mock data - replace with actual API call
-      const mockUsers: UserType[] = [
-        {
-          id: 'user1',
-          username: 'johndoe',
-          email: 'john@example.com',
-          reputation: 2450,
-          avatar: undefined,
-          bio: 'Full-stack developer with 5+ years of experience in React, Node.js, and TypeScript.',
-          location: 'San Francisco, CA',
-          website: 'https://johndoe.dev',
-          github: 'https://github.com/johndoe',
-          linkedin: 'https://linkedin.com/in/johndoe',
-          joinDate: '2022-03-15T00:00:00Z',
-          lastSeen: '2024-07-15T10:30:00Z',
-          isOnline: true,
-          badges: [
-            { id: 'early-adopter', name: 'Early Adopter', description: 'Joined in the first 100 users', icon: '🚀' },
-            { id: 'helpful', name: 'Helpful', description: 'Received 50+ upvotes on answers', icon: '🤝' }
-          ],
-          stats: {
-            questionsAsked: 15,
-            answersGiven: 42,
-            totalViews: 12450,
-            upvotesReceived: 185,
-            downvotesReceived: 12,
-            acceptedAnswers: 28,
-            bountyWon: 350
-          },
-          preferences: {
-            theme: 'system',
-            emailNotifications: true,
-            profileVisibility: 'public'
-          }
-        },
-        {
-          id: 'user2',
-          username: 'janedoe',
-          email: 'jane@example.com',
-          reputation: 1890,
-          avatar: undefined,
-          bio: 'Frontend developer passionate about creating beautiful and accessible user interfaces.',
-          location: 'New York, NY',
-          website: 'https://janesmith.dev',
-          github: undefined,
-          linkedin: undefined,
-          joinDate: '2022-05-20T00:00:00Z',
-          lastSeen: '2024-07-14T18:45:00Z',
-          isOnline: false,
-          badges: [
-            { id: 'questioner', name: 'Curious', description: 'Asked 10+ questions', icon: '❓' }
-          ],
-          stats: {
-            questionsAsked: 8,
-            answersGiven: 35,
-            totalViews: 8920,
-            upvotesReceived: 145,
-            downvotesReceived: 8,
-            acceptedAnswers: 22,
-            bountyWon: 200
-          },
-          preferences: {
-            theme: 'dark',
-            emailNotifications: true,
-            profileVisibility: 'public'
-          }
-        },
-        {
-          id: 'user3',
-          username: 'alexsmith',
-          email: 'alex@example.com',
-          reputation: 3200,
-          avatar: undefined,
-          bio: 'Backend engineer specializing in scalable systems and cloud architecture.',
-          location: 'Seattle, WA',
-          website: undefined,
-          github: 'https://github.com/alexsmith',
-          linkedin: 'https://linkedin.com/in/alexsmith',
-          joinDate: '2021-11-10T00:00:00Z',
-          lastSeen: '2024-07-15T08:20:00Z',
-          isOnline: false,
-          badges: [
-            { id: 'early-adopter', name: 'Early Adopter', description: 'Joined in the first 100 users', icon: '🚀' },
-            { id: 'helpful', name: 'Helpful', description: 'Received 50+ upvotes on answers', icon: '🤝' },
-            { id: 'expert', name: 'Expert', description: 'Top contributor in multiple tags', icon: '⭐' }
-          ],
-          stats: {
-            questionsAsked: 22,
-            answersGiven: 68,
-            totalViews: 18750,
-            upvotesReceived: 298,
-            downvotesReceived: 15,
-            acceptedAnswers: 45,
-            bountyWon: 750
-          },
-          preferences: {
-            theme: 'light',
-            emailNotifications: true,
-            profileVisibility: 'public'
-          }
-        },
-        {
-          id: 'user4',
-          username: 'sarahwilson',
-          email: 'sarah@example.com',
-          reputation: 1456,
-          avatar: undefined,
-          bio: 'Mobile app developer focused on React Native and Flutter.',
-          location: 'Austin, TX',
-          website: undefined,
-          github: undefined,
-          linkedin: undefined,
-          joinDate: '2023-01-08T00:00:00Z',
-          lastSeen: '2024-07-15T12:15:00Z',
-          isOnline: true,
-          badges: [
-            { id: 'questioner', name: 'Curious', description: 'Asked 10+ questions', icon: '❓' }
-          ],
-          stats: {
-            questionsAsked: 12,
-            answersGiven: 28,
-            totalViews: 6780,
-            upvotesReceived: 98,
-            downvotesReceived: 5,
-            acceptedAnswers: 18,
-            bountyWon: 125
-          },
-          preferences: {
-            theme: 'system',
-            emailNotifications: true,
-            profileVisibility: 'public'
-          }
-        },
-        {
-          id: 'user5',
-          username: 'mikejohnson',
-          email: 'mike@example.com',
-          reputation: 876,
-          avatar: undefined,
-          bio: 'DevOps engineer working with Kubernetes, Docker, and CI/CD pipelines.',
-          location: 'Denver, CO',
-          website: 'https://mikej.dev',
-          github: 'https://github.com/mikejohnson',
-          linkedin: undefined,
-          joinDate: '2023-06-22T00:00:00Z',
-          lastSeen: '2024-07-13T16:30:00Z',
-          isOnline: false,
-          badges: [],
-          stats: {
-            questionsAsked: 6,
-            answersGiven: 19,
-            totalViews: 3240,
-            upvotesReceived: 52,
-            downvotesReceived: 3,
-            acceptedAnswers: 12,
-            bountyWon: 75
-          },
-          preferences: {
-            theme: 'dark',
-            emailNotifications: false,
-            profileVisibility: 'public'
-          }
-        }
-      ];
-
+      const response = await api.get('/users');
+      let fetchedUsers: UserType[] = response.data.data?.users || [];
       // Sort users based on selected criteria
-      const sortedUsers = [...mockUsers].sort((a, b) => {
+      const sortedUsers = [...fetchedUsers].sort((a, b) => {
         switch (sortBy) {
           case 'reputation':
             return b.reputation - a.reputation;
@@ -196,7 +34,6 @@ export default function UsersPage() {
             return 0;
         }
       });
-
       setUsers(sortedUsers);
     } catch (error) {
       console.error('Failed to load users:', error);

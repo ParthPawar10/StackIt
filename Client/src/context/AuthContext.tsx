@@ -24,15 +24,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         if (token) {
+          console.log('Found token, getting user data...');
+          
+          // Verify the token format
+          if (token.startsWith('Bearer ')) {
+            localStorage.setItem('token', token.substring(7));
+          }
+          
           const userData = await authService.getCurrentUser();
+          console.log('User data:', userData);
           setUser(userData);
+        } else {
+          console.log('No token found');
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
+        // Clear both storage types on error
         localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        setUser(null);
       } finally {
+        console.log('Auth initialization complete');
         setLoading(false);
       }
     };
@@ -42,15 +56,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: { email: string; password: string; rememberMe?: boolean }) => {
     try {
+      console.log('Attempting login with:', credentials.email);
       const response = await authService.login(credentials);
+      console.log('Login response:', response);
+      
       setUser(response.user);
+      
+      // Store token based on rememberMe preference
       if (credentials.rememberMe) {
         localStorage.setItem('token', response.token);
+        sessionStorage.removeItem('token');
       } else {
         sessionStorage.setItem('token', response.token);
+        localStorage.removeItem('token');
       }
+      
       return response;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Login error in context:', error);
+      
+      // Clear any existing tokens on login failure
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      setUser(null);
+      
       throw error;
     }
   };
@@ -73,6 +102,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
+    console.log('Logging out user');
     setUser(null);
     localStorage.removeItem('token');
     sessionStorage.removeItem('token');

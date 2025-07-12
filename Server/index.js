@@ -18,6 +18,7 @@ import tagRoutes from './routes/tags.js';
 import userRoutes from './routes/users.js';
 import notificationRoutes from './routes/notifications.js';
 import uploadRoutes from './routes/upload.js';
+import adminRoutes from './routes/admin.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -67,6 +68,7 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.send('StackIt API Server is running! 🚀');

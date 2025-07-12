@@ -300,7 +300,7 @@ router.get('/success', (req, res) => {
             setTimeout(() => {
               console.log('Closing popup window');
               window.close();
-            }, 2000); // 2 seconds
+            }, 1000);
           } else {
             console.log('No window.opener, storing token locally');
             localStorage.setItem('token', '${token}');

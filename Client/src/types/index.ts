@@ -1,29 +1,40 @@
 export interface Question {
-  id: string;
+  _id: string;
+  id?: string; // Keep for backward compatibility
   title: string;
-  content: string;
-  authorId: string;
+  description: string;
+  content?: string; // Keep for backward compatibility
+  authorId?: string;
   author: {
-    id: string;
+    _id: string;
+    id?: string;
     username: string;
     avatar?: string;
     reputation: number;
   };
   tags: Tag[];
-  votes: number;
+  votes: {
+    upvotes: string[];
+    downvotes: string[];
+  };
+  voteScore: number;
   views: number;
-  answers: Answer[];
+  answers?: Answer[];
   answerCount: number;
-  hasAcceptedAnswer: boolean;
+  hasAcceptedAnswer?: boolean;
+  acceptedAnswer?: string | null;
   acceptedAnswerId?: string;
   createdAt: string;
   updatedAt: string;
-  isEdited: boolean;
+  isEdited?: boolean;
   editHistory?: EditHistory[];
-  isClosed: boolean;
+  isClosed?: boolean;
   closedReason?: string;
   isBookmarked?: boolean;
   userVote?: 'up' | 'down' | null;
+  isActive: boolean;
+  isPinned: boolean;
+  viewedBy: string[];
 }
 
 export interface Answer {
@@ -67,13 +78,14 @@ export interface Comment {
 }
 
 export interface Tag {
-  id: string;
+  _id: string;
+  id?: string; // Keep for backward compatibility
   name: string;
   description?: string;
-  count: number;
+  count?: number;
   color?: string;
   isFollowed?: boolean;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface Vote {
@@ -182,10 +194,24 @@ export interface User {
   };
 }
 
-// API Response types
+export interface CreateQuestionData {
+  title: string;
+  description: string;
+  tags: string[];
+}
+
+export interface QuestionFilters {
+  page?: number;
+  limit?: number;
+  sort?: 'recent' | 'popular' | 'votes' | 'unanswered';
+  tags?: string[];
+  search?: string;
+  author?: string;
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   message?: string;
   data?: T;
-  error?: string;
+  errors?: any[];
 }

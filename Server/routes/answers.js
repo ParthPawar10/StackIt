@@ -28,6 +28,38 @@ router.post('/', authenticateToken, validateAnswer, handleValidationErrors, asyn
 
     await answer.save();
 
+    // Mention detection: find @username in content
+    const mentionRegex = /@([a-zA-Z0-9_]+)/g;
+    const mentionedUsernames = [];
+    let match;
+    while ((match = mentionRegex.exec(content)) !== null) {
+      mentionedUsernames.push(match[1]);
+    }
+    if (mentionedUsernames.length > 0) {
+      const mentionedUsers = await User.find({ username: { $in: mentionedUsernames } });
+      for (const mentionedUser of mentionedUsers) {
+        if (mentionedUser._id.toString() !== req.user._id.toString()) {
+          const mentionNotification = new Notification({
+            recipient: mentionedUser._id,
+            sender: req.user._id,
+            type: 'mention',
+            message: `${req.user.username} mentioned you in an answer`,
+            relatedQuestion: questionId,
+            relatedAnswer: answer._id
+          });
+          await mentionNotification.save();
+          // Emit real-time notification
+          const io = req.app.get('io');
+          io.to(`user-${mentionedUser._id}`).emit('new-notification', {
+            type: 'mention',
+            message: mentionNotification.message,
+            questionId: questionId,
+            answerId: answer._id
+          });
+        }
+      }
+    }
+
     // Update question answer count
     question.answerCount += 1;
     await question.save();

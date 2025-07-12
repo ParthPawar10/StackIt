@@ -4,6 +4,7 @@ import { Search, Filter, Plus, TrendingUp, Clock, MessageSquare, Eye } from 'luc
 import type { Question } from '../types/index.ts';
 import { useAuth } from '../context/AuthContext.tsx';
 import QuestionCard from '../components/questions/QuestionCard.tsx';
+import * as questionService from '../services/questionService.ts';
 import toast from 'react-hot-toast';
 
 interface SortOption {
@@ -13,19 +14,20 @@ interface SortOption {
 }
 
 const sortOptions: SortOption[] = [
-  { value: 'newest', label: 'Newest', icon: Clock },
+  { value: 'recent', label: 'Newest', icon: Clock },
   { value: 'votes', label: 'Most Votes', icon: TrendingUp },
-  { value: 'answers', label: 'Most Answers', icon: MessageSquare },
-  { value: 'views', label: 'Most Views', icon: Eye }
+  { value: 'popular', label: 'Most Answers', icon: MessageSquare },
+  { value: 'unanswered', label: 'Unanswered', icon: Eye }
 ];
 
 export default function QuestionsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [selectedTag, setSelectedTag] = useState(searchParams.get('tag') || '');
-  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest');
+  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'recent');
   const [showFilters, setShowFilters] = useState(false);
   const { isAuthenticated } = useAuth();
 
@@ -38,171 +40,54 @@ export default function QuestionsPage() {
     const params = new URLSearchParams();
     if (searchQuery) params.set('q', searchQuery);
     if (selectedTag) params.set('tag', selectedTag);
-    if (sortBy !== 'newest') params.set('sort', sortBy);
+    if (sortBy !== 'recent') params.set('sort', sortBy);
     setSearchParams(params);
   }, [searchQuery, selectedTag, sortBy, setSearchParams]);
 
   const loadQuestions = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      // Mock data - replace with actual API call
-      let mockQuestions: Question[] = [
-        {
-          id: '1',
-          title: 'How to implement authentication in React with TypeScript?',
-          content: 'I need help with implementing user authentication in my React TypeScript application...',
-          authorId: 'user1',
-          author: {
-            id: 'user1',
-            username: 'johndoe',
-            reputation: 1250,
-            avatar: undefined
-          },
-          tags: [
-            { id: 'react', name: 'react', count: 1500, createdAt: '2024-01-01' },
-            { id: 'typescript', name: 'typescript', count: 1200, createdAt: '2024-01-01' },
-            { id: 'auth', name: 'authentication', count: 800, createdAt: '2024-01-01' }
-          ],
-          votes: 15,
-          views: 342,
-          answers: [],
-          answerCount: 3,
-          hasAcceptedAnswer: true,
-          acceptedAnswerId: 'answer1',
-          createdAt: '2024-07-10T10:30:00Z',
-          updatedAt: '2024-07-10T10:30:00Z',
-          isEdited: false,
-          isClosed: false,
-          isBookmarked: false,
-          userVote: null
-        },
-        {
-          id: '2',
-          title: 'Best practices for state management in large React applications',
-          content: 'What are the recommended approaches for managing state in large-scale React applications?',
-          authorId: 'user2',
-          author: {
-            id: 'user2',
-            username: 'janedoe',
-            reputation: 890,
-            avatar: undefined
-          },
-          tags: [
-            { id: 'react', name: 'react', count: 1500, createdAt: '2024-01-01' },
-            { id: 'state-management', name: 'state-management', count: 450, createdAt: '2024-01-01' },
-            { id: 'redux', name: 'redux', count: 320, createdAt: '2024-01-01' }
-          ],
-          votes: 8,
-          views: 156,
-          answers: [],
-          answerCount: 2,
-          hasAcceptedAnswer: false,
-          acceptedAnswerId: undefined,
-          createdAt: '2024-07-09T14:20:00Z',
-          updatedAt: '2024-07-09T14:20:00Z',
-          isEdited: false,
-          isClosed: false,
-          isBookmarked: false,
-          userVote: null
-        },
-        {
-          id: '3',
-          title: 'How to optimize React app performance?',
-          content: 'My React application is running slowly. What are some techniques to improve performance?',
-          authorId: 'user3',
-          author: {
-            id: 'user3',
-            username: 'alexsmith',
-            reputation: 2100,
-            avatar: undefined
-          },
-          tags: [
-            { id: 'react', name: 'react', count: 1500, createdAt: '2024-01-01' },
-            { id: 'performance', name: 'performance', count: 380, createdAt: '2024-01-01' },
-            { id: 'optimization', name: 'optimization', count: 250, createdAt: '2024-01-01' }
-          ],
-          votes: 23,
-          views: 892,
-          answers: [],
-          answerCount: 5,
-          hasAcceptedAnswer: true,
-          acceptedAnswerId: 'answer2',
-          createdAt: '2024-07-08T09:15:00Z',
-          updatedAt: '2024-07-08T09:15:00Z',
-          isEdited: false,
-          isClosed: false,
-          isBookmarked: false,
-          userVote: null
-        },
-        {
-          id: '4',
-          title: 'Understanding JavaScript closures with examples',
-          content: 'Can someone explain JavaScript closures with practical examples?',
-          authorId: 'user4',
-          author: {
-            id: 'user4',
-            username: 'codecrafter',
-            reputation: 1650,
-            avatar: undefined
-          },
-          tags: [
-            { id: 'javascript', name: 'javascript', count: 2100, createdAt: '2024-01-01' },
-            { id: 'closures', name: 'closures', count: 180, createdAt: '2024-01-01' },
-            { id: 'functions', name: 'functions', count: 420, createdAt: '2024-01-01' }
-          ],
-          votes: 12,
-          views: 567,
-          answers: [],
-          answerCount: 4,
-          hasAcceptedAnswer: false,
-          acceptedAnswerId: undefined,
-          createdAt: '2024-07-07T16:45:00Z',
-          updatedAt: '2024-07-07T16:45:00Z',
-          isEdited: false,
-          isClosed: false,
-          isBookmarked: false,
-          userVote: null
-        }
-      ];
+      const filters = {
+        sort: sortBy as 'recent' | 'popular' | 'votes' | 'unanswered',
+        search: searchQuery || undefined,
+        tags: selectedTag ? [selectedTag] : undefined,
+        limit: 20
+      };
 
-      // Apply filters
-      if (searchQuery) {
-        mockQuestions = mockQuestions.filter(q => 
-          q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          q.content.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-
-      if (selectedTag) {
-        mockQuestions = mockQuestions.filter(q => 
-          q.tags.some(tag => tag.name.toLowerCase() === selectedTag.toLowerCase())
-        );
-      }
-
-      // Apply sorting
-      mockQuestions.sort((a, b) => {
-        switch (sortBy) {
-          case 'votes':
-            return b.votes - a.votes;
-          case 'answers':
-            return b.answerCount - a.answerCount;
-          case 'views':
-            return b.views - a.views;
-          case 'newest':
-          default:
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        }
-      });
-
-      setQuestions(mockQuestions);
+      const response = await questionService.getQuestions(filters);
+      setQuestions(response.questions || []);
     } catch (error) {
       console.error('Failed to load questions:', error);
+      setError('Failed to load questions');
       toast.error('Failed to load questions');
     } finally {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-500 text-xl mb-4">{error}</div>
+        <button 
+          onClick={loadQuestions}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,16 +97,8 @@ export default function QuestionsPage() {
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedTag('');
-    setSortBy('newest');
+    setSortBy('recent');
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

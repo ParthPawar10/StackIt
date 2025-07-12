@@ -39,71 +39,55 @@ export default function ProfilePage() {
     try {
       setLoading(true);
       
-      // Mock user data - replace with actual API call
-      const mockUser: UserType = {
-        id: userId || 'user1',
-        username: 'johndoe',
-        email: 'john@example.com',
-        reputation: 1250,
-        avatar: undefined,
-        bio: 'Full-stack developer with 5+ years of experience in React, Node.js, and TypeScript. Passionate about clean code and helping others learn to code.',
-        location: 'San Francisco, CA',
-        website: 'https://johndoe.dev',
-        github: 'https://github.com/johndoe',
-        linkedin: 'https://linkedin.com/in/johndoe',
-        joinDate: '2022-03-15T00:00:00Z',
-        lastSeen: '2024-07-15T10:30:00Z',
-        isOnline: true,
-        badges: [
-          { id: 'early-adopter', name: 'Early Adopter', description: 'Joined in the first 100 users', icon: '🚀' },
-          { id: 'helpful', name: 'Helpful', description: 'Received 50+ upvotes on answers', icon: '🤝' },
-          { id: 'questioner', name: 'Curious', description: 'Asked 10+ questions', icon: '❓' }
-        ],
-        stats: {
-          questionsAsked: 5,
-          answersGiven: 12,
-          totalViews: 2450,
-          upvotesReceived: 145,
-          downvotesReceived: 8,
-          acceptedAnswers: 7,
-          bountyWon: 150
-        },
-        preferences: {
-          theme: 'system',
-          emailNotifications: true,
-          profileVisibility: 'public'
-        }
-      };
+      // If no userId in URL, show current user's profile
+      const targetUserId = userId || currentUser?.id;
+      
+      if (!targetUserId) {
+        toast.error('User not found');
+        return;
+      }
 
-      // Mock questions data
-      const mockQuestions: Question[] = [
-        {
-          id: '1',
-          title: 'How to implement authentication in React with TypeScript?',
-          content: 'I need help with implementing authentication...',
-          authorId: userId || 'user1',
-          author: mockUser,
-          tags: [
-            { id: 'react', name: 'react', count: 1500, createdAt: '2024-01-01' },
-            { id: 'typescript', name: 'typescript', count: 1200, createdAt: '2024-01-01' }
-          ],
-          votes: 15,
-          views: 342,
-          answers: [],
-          answerCount: 3,
-          hasAcceptedAnswer: true,
-          acceptedAnswerId: 'answer1',
-          createdAt: '2024-07-10T10:30:00Z',
-          updatedAt: '2024-07-10T10:30:00Z',
-          isEdited: false,
-          isClosed: false,
-          isBookmarked: false,
-          userVote: null
-        }
-      ];
-
-      setProfileUser(mockUser);
-      setUserQuestions(mockQuestions);
+      // For now, if it's the current user, use their data from auth context
+      if (targetUserId === currentUser?.id && currentUser) {
+        // Convert auth user to profile user format with defaults
+        const profileUserData: UserType = {
+          ...currentUser,
+          bio: currentUser.firstName && currentUser.lastName ? 
+            `${currentUser.firstName} ${currentUser.lastName}` : undefined,
+          location: undefined,
+          website: undefined,
+          github: undefined,
+          linkedin: undefined,
+          joinDate: currentUser.createdAt,
+          lastSeen: new Date().toISOString(),
+          isOnline: true,
+          badges: [],
+          stats: {
+            questionsAsked: 0,
+            answersGiven: 0,
+            totalViews: 0,
+            upvotesReceived: 0,
+            downvotesReceived: 0,
+            acceptedAnswers: 0,
+            bountyWon: 0
+          },
+          preferences: {
+            theme: currentUser.preferences?.theme || 'system',
+            emailNotifications: currentUser.preferences?.notifications?.email || true,
+            profileVisibility: currentUser.preferences?.privacy?.showProfile ? 'public' : 'private'
+          }
+        };
+        setProfileUser(profileUserData);
+      } else {
+        // TODO: Fetch other user's profile from API
+        // For now, don't show anything for other users
+        setProfileUser(null);
+      }
+      
+      // Load user's questions - this should filter by user ID
+      // TODO: Replace with actual API call that filters by user
+      setUserQuestions([]);
+      
     } catch (error) {
       console.error('Failed to load user profile:', error);
       toast.error('Failed to load profile');
@@ -134,19 +118,19 @@ export default function ProfilePage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{profileUser.stats.questionsAsked}</div>
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{profileUser?.stats?.questionsAsked || 0}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Questions</div>
         </div>
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{profileUser.stats.answersGiven}</div>
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{profileUser?.stats?.answersGiven || 0}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Answers</div>
         </div>
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{profileUser.stats.totalViews}</div>
+          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{profileUser?.stats?.totalViews || 0}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Views</div>
         </div>
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{profileUser.reputation}</div>
+          <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{profileUser?.reputation || 0}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Reputation</div>
         </div>
       </div>
