@@ -3,12 +3,26 @@ import type { AuthResponse, LoginCredentials, RegisterData, User, ResetPasswordD
 
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   const response = await api.post('/auth/login', credentials);
-  return response.data.data; // Server returns data nested under 'data'
+  if (response.data.success && response.data.data) {
+    return {
+      user: response.data.data.user,
+      token: response.data.data.token,
+      refreshToken: response.data.data.refreshToken
+    };
+  }
+  throw new Error(response.data.message || 'Login failed');
 };
 
 export const register = async (userData: RegisterData): Promise<AuthResponse> => {
   const response = await api.post('/auth/register', userData);
-  return response.data.data; // Server returns data nested under 'data'
+  if (response.data.success && response.data.data) {
+    return {
+      user: response.data.data.user,
+      token: response.data.data.token,
+      refreshToken: response.data.data.refreshToken
+    };
+  }
+  throw new Error(response.data.message || 'Registration failed');
 };
 
 export const logout = async (): Promise<void> => {
@@ -17,7 +31,10 @@ export const logout = async (): Promise<void> => {
 
 export const getCurrentUser = async (): Promise<User> => {
   const response = await api.get('/auth/me');
-  return response.data.data.user; // Server returns nested format
+  if (response.data.success && response.data.data) {
+    return response.data.data.user || response.data.data;
+  }
+  throw new Error(response.data.message || 'Failed to get user data');
 };
 
 export const refreshToken = async (): Promise<{ token: string }> => {
